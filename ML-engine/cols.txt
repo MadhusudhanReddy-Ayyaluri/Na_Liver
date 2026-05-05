@@ -1,0 +1,14 @@
+anchor_age
+gender
+Creatinine
+Hemoglobin
+Sodium
+Urea Nitrogen
+WBC
+bun_creatinine_ratio
+renal_dysfunction_flag
+severe_anemia
+hyponatremia
+severe_hyponatremia
+leukocytosis
+elderly_risk

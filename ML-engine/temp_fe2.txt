@@ -1,0 +1,71 @@
+X["renal_dyfunction_flag"] = (X["Creatinine"]>=1.5).astype(int)X["severe_anemia"] = (X["Hemoglobin"]<9).astype(int)X["hypotermia"] = (X["Sodium"]<135).astype(int)X["severe_hyponatremia"] = (X["Sodium"] < 130).astype(int)X["leukocytosis"] = (X["WBC"] > 11).astype(int)X["elderly_risk"] = (X["anchor_age"] >= 60).astype(int)thresold = 0.15
+y_pred_custom = (y_proba >= thresold).astype(int)thresold = 0.15
+y_pred_custom = (y_proba >= thresold).astype(int)
+print(classification_report(Y_test,y_pred_custom,digits=3))from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score, classification_report,average_precision_score
+
+lr = LogisticRegression(max_iter=2000, class_weight="balanced")
+lr.fit(X_train, Y_train)
+
+lr_proba = lr.predict_proba(X_test)[:, 1]
+print("Logistic Regression ROC-AUC:", roc_auc_score(Y_test, lr_proba))
+print(classification_report(Y_test, (lr_proba >= 0.15).astype(int)))
+print("Logistic Regression PR-AUC:", average_precision_score(Y_test, lr_proba))
+
+from sklearn.naive_bayes import GaussianNB
+
+nb = GaussianNB()
+nb.fit(X_train, Y_train)
+
+nb_proba = nb.predict_proba(X_test)[:, 1]
+print("Naive Bayes ROC-AUC:", roc_auc_score(Y_test, nb_proba))
+print(classification_report(Y_test, (nb_proba >= 0.15).astype(int)))
+print("Naive Bayes PR-AUC:", average_precision_score(Y_test, nb_proba))from sklearn.svm import SVC
+
+svm = SVC(probability=True, class_weight="balanced", random_state=42)
+svm.fit(X_train, Y_train)
+
+svm_proba = svm.predict_proba(X_test)[:, 1]
+print("SVM ROC-AUC:", roc_auc_score(Y_test, svm_proba))
+print(classification_report(Y_test, (svm_proba >= 0.15).astype(int)))
+print("SVM PR-AUC:", average_precision_score(Y_test, svm_proba))
+
+from sklearn.ensemble import RandomForestClassifier
+
+rf = RandomForestClassifier(
+    n_estimators=400,
+    max_depth=6,
+    class_weight="balanced",
+    random_state=42
+)
+rf.fit(X_train, Y_train)
+
+rf_proba = rf.predict_proba(X_test)[:, 1]
+print("Random Forest ROC-AUC:", roc_auc_score(Y_test, rf_proba))
+print(classification_report(Y_test, (rf_proba >= 0.15).astype(int)))
+print("Random Forest PR-AUC:", average_precision_score(Y_test, rf_proba))from xgboost import XGBClassifier
+
+neg = (y_train == 0).sum()
+pos = (y_train == 1).sum()
+scale_pos_weight = neg / pos
+
+xgb = XGBClassifier(
+    n_estimators=500,
+    max_depth=4,
+    learning_rate=0.05,
+    subsample=0.9,
+    colsample_bytree=0.9,
+    min_child_weight=3,
+    reg_lambda=1.0,
+    gamma=0.0,
+    scale_pos_weight=scale_pos_weight,
+    eval_metric="logloss",
+    random_state=42
+)
+
+xgb.fit(X_train, Y_train)
+
+xgb_proba = xgb.predict_proba(X_test)[:, 1]
+print("XGBoost ROC-AUC:", roc_auc_score(Y_test, xgb_proba))
+print(classification_report(Y_test, (xgb_proba >= 0.15).astype(int)))
+print("Xgboost PR-AUC:", average_precision_score(Y_test, xgb_proba))

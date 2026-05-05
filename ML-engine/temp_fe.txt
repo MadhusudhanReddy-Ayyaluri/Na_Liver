@@ -1,0 +1,31 @@
+X["severe_anemia"] = (X["Hemoglobin"]<9).astype(int)import joblib
+import pandas as pd
+
+# load model and features
+xgb = joblib.load("xgb_mortality_model.pkl")
+feature_cols = joblib.load("xgb_feature_columns.pkl")
+
+# new patient input (example)
+input_data = {
+    "anchor_age": 65,
+    "gender": 1,
+    "Creatinine": 2.1,
+    "Hemoglobin": 8.5,
+    "Sodium": 131,
+    "Urea Nitrogen": 40,
+    "WBC": 14.2,
+    "bun_creatinine_ratio": 40 / 2.1,
+    "renal_dysfunction_flag": 1,
+    "severe_anemia": 1,
+    "hyponatremia": 1,
+    "severe_hyponatremia": 0,
+    "leukocytosis": 1,
+    "elderly_risk": 1
+}
+
+# IMPORTANT: align with training features
+X_input = pd.DataFrame([input_data])[feature_cols]
+
+# predict mortality risk
+prob = xgb.predict_proba(X_input)[0, 1]
+print("Mortality risk %:", round(prob * 100, 2))

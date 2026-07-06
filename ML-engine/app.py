@@ -38,11 +38,26 @@ def home():
     return flask.send_from_directory(app.static_folder, 'login.html')
 
 # Load model and feature columns
+# IMPORTANT: these pickles must be loaded from the same working directory as this file.
+# If the API is started from a different folder, relative paths will break.
 try:
-    model = pickle.load(open("xgb_mortality_model.pkl", "rb"))
-    features = pickle.load(open("xgb_feature_columns.pkl", "rb"))
+    import os
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    model_path = os.path.join(base_dir, "xgb_mortality_model.pkl")
+    features_path = os.path.join(base_dir, "xgb_feature_columns.pkl")
+
+    print("[model] loading:", model_path)
+    print("[features] loading:", features_path)
+    model = pickle.load(open(model_path, "rb"))
+    features = pickle.load(open(features_path, "rb"))
+    print("[features] loaded count:", len(features))
+    print("[features] first:", list(features)[:20])
 except Exception as e:
-    print("Could not load model or feature columns:", e)
+    # Fail fast so /predict does not crash with 'features' undefined.
+    raise RuntimeError(f"Could not load model or feature columns: {e}")
+
+
 
 @app.route('/predict', methods=['POST'])
 def predict():
